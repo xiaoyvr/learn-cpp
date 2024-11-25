@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-// #include "naminghelper.h"
 #include "testinghelper.h"
 #include "enums.h"
 
@@ -94,6 +93,6 @@ INSTANTIATE_TEST_SUITE_P(Vec, IncludesUnderlyingNamedScenario, Values(
 });
 TEST_P(IncludesUnderlyingNamedScenario, should_) {
   auto & [pred] = GetParam();
-  auto tobeTested = std::vector<int> {0, 1};
+  auto tobeTested = std::vector<int> {0, 1, 3};
   ASSERT_TRUE(pred(tobeTested)) << std::string(pred) << " failed";
 }

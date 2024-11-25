@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 # Ensure vcpkg knows where to find packages
-# set(VCPKG_TARGET_TRIPLET "arm64-osx")
+set(VCPKG_TARGET_TRIPLET "arm64-osx")
 set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}")
 
 
