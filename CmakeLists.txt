@@ -1,0 +1,22 @@
+cmake_minimum_required(VERSION 3.14)
+project(learn-cpp LANGUAGES CXX)
+
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+
+# Ensure vcpkg knows where to find packages
+# set(VCPKG_TARGET_TRIPLET "arm64-osx")
+set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/vcpkg_installed/${VCPKG_TARGET_TRIPLET}")
+
+
+set(VCPKG_ROOT "/nix/store/053bxsb59nw0pg9kk43nsklhlk537mhv-vcpkg-2024.03.25")
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/share/vcpkg/scripts/buildsystems/vcpkg.cmake")
+endif()
+
+# message(STATUS "VCPKG_HOST_TRIPLET: ${VCPKG_HOST_TRIPLET}")
+
+add_executable(main main.cpp)
+add_subdirectory(tests)
