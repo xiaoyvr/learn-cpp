@@ -1,10 +1,10 @@
+#pragma once
+
 #include "testinghelper.h"
 
 enum class Color {Blue, Red, Yellow};
-struct ColorN : public testing::naming::named<Color> {
-    ColorN(Color e): testing::naming::named<Color>(e){}
-
-    operator std::string () const override {
+void PrintTo(const Color& p, std::ostream* os) {
+    auto func = [](const auto& e){
         switch (e)
         {
         case Color::Blue:
@@ -16,11 +16,10 @@ struct ColorN : public testing::naming::named<Color> {
         default:
             return "Unknown";
         }
-    }
-};
-
-ColorN _n(typename ColorN::unnamed_t e){
-    return ColorN(e);
+    };
+    *os << func(p);
 }
+
+// no printTo defined
 enum class Direction {Up, Right, Bottom, Left};
 

@@ -4,7 +4,6 @@
 #include <vector>
 #include <numeric>
 
-
 namespace testing
 {
 	namespace meta {
@@ -23,17 +22,6 @@ namespace testing
 		template <typename T, template <typename> class Op>
 		struct is_detected<T, Op, std::void_t<Op<T>>> : std::true_type {};
 
-		template <typename T>
-		using unnamed_t_detector = typename T::unnamed_t;
-		template<typename T, bool = is_detected<T, unnamed_t_detector>::value>
-		struct select_unnamed_t {
-			using type = T;
-		};
-		template<typename T>
-		struct select_unnamed_t<T, true> {
-			using type = typename T::unnamed_t;
-		};
-
 		template <typename T, typename = void>
 		struct has_str_conv : std::false_type {};
 		template <typename T>
@@ -43,23 +31,39 @@ namespace testing
 		struct is_to_string_compatible : std::false_type {};
 		template <typename T>
 		struct is_to_string_compatible<T, std::void_t<decltype(std::to_string(std::declval<T>()))>> : std::true_type {};
+
+		template <typename T, typename = void>
+		struct is_print_to_compatible : std::false_type {};
+		template <typename T>
+		struct is_print_to_compatible<T, std::void_t<decltype(PrintTo(std::declval<T const&>(), std::declval<std::ostream*>()))>>: std::true_type {};
 	}
 
 	namespace naming {
-		template<typename T, bool = meta::has_str_conv<T>::value, bool = meta::is_to_string_compatible<T>::value>
-		struct to_string {
+		template<typename T, 
+            bool = meta::is_print_to_compatible<T>::value,
+            bool = meta::has_str_conv<T>::value, 
+            bool = meta::is_to_string_compatible<T>::value>
+		struct print_name {
             std::string operator()(const T& t) const {
                 return "NONAME";
             }
 		};
-		template<typename T, bool B>
-		struct to_string <T, true, B> {
+		template<typename T, bool Conv, bool ToString>
+		struct print_name<T, true, Conv, ToString> {
             std::string operator()(const T& t) const {
-                return std::string(t);
+                std::ostringstream oss;
+                PrintTo(t, &oss);
+                return oss.str();
             }
         };
-		template<typename T, bool B>
-		struct to_string <T, B, true> {
+        template<typename T, bool ToString>
+		struct print_name<T, false, true, ToString> {
+            std::string operator()(const T& t) const {
+                return static_cast<std::string>(t);
+            }
+        };
+		template<typename T>
+		struct print_name<T, false, false, true> {
             std::string operator()(const T& t) const {
                 return std::to_string(t);
             }
@@ -67,10 +71,10 @@ namespace testing
 
 		template<typename TV>
 		std::string operator+(const std::string& s, const std::vector<TV>& items) {
-            static to_string<TV> to_str;
+            static print_name<TV> print_name;
 			auto joined = std::accumulate(items.begin(), items.end(), std::string(), 
                 [](const std::string& a, const auto& item) {
-				    return a + "_" + to_str(item);
+				    return a + "_" + print_name(item);
                 });
 			if (!joined.empty()) {
 				return s + joined.substr(1);
@@ -78,25 +82,6 @@ namespace testing
 				return s + "NOTHING";
 			}
 		}
-
-		template<typename T>
-		struct named {
-			using unnamed_t = T;
-			named(T e) : e(e) {}
-			virtual operator std::string() const = 0;
-			operator T () const {return e;}
-		protected:
-			T e;
-		};
-
-        template<typename T>
-        std::string operator+(const named<T>& p, const std::string& s) {
-            return static_cast<std::string>(p) + s;
-        }
-        template<typename T>
-        std::string operator+(const std::string& s, const named<T>& p) {
-            return s + static_cast<std::string>(p);
-        }
 
         std::string w2s(const std::wstring w) {
             return std::string(w.begin(), w.end());
@@ -106,8 +91,7 @@ namespace testing
             return lhs + w2s(rhs);
         }
 	}
-
-
+    
     namespace pred {
         using namespace naming;
 
@@ -129,10 +113,8 @@ namespace testing
         struct collection_pred {
         private:
             using this_t = collection_pred<TC, TV>;
-            using raw_t = typename meta::select_unnamed_t<TV>::type;
-            using compare_func = std::function<bool(const raw_t&, typename TC::const_reference)>;
-
-            
+            using raw_t = TV;
+            using compare_func = std::function<bool(const raw_t&, typename TC::const_reference)>;           
             std::string name;
             std::function<bool(const TC&, compare_func)> func;
             collection_pred(std::string name, std::function<bool(const TC&, compare_func)> func) : name(name), func(func) {}
@@ -142,14 +124,26 @@ namespace testing
                 return func(collection, compare);
             }
 
+            this_t operator! () const {
+                std::function<bool(const TC&, compare_func)> reverse_func = [f = func](const TC& collection, compare_func compare) {
+                    return ! f(collection, compare);
+                };
+                return this_t {
+                    "not_" + this->name, 
+                    [func = func](const TC& collection, compare_func compare) {
+                        return !func(collection, compare);
+                    }
+                };
+            }
+
             operator std::string() const {
                 return name;
             }
 
             static this_t contains(const TV& item) {
-                static to_string<TV> to_str;
+                static print_name<TV> print_name;
                 return this_t{
-                    "contains_" + to_str(item),
+                    "contains_" + print_name(item),
                     [item](const TC& collection, compare_func compare) {
                         auto it = std::find_if(collection.begin(), collection.end(),
                             [&item, compare](const auto& i) {
@@ -161,9 +155,9 @@ namespace testing
             }
 
             static this_t not_contains(const TV& item) {
-                static to_string<TV> to_str;
+                static print_name<TV> print_name;
                 return this_t{
-                    "not_contains_" + to_str(item),
+                    "not_contains_" + print_name(item),
                     [item](const TC& collection, compare_func compare) {
                         auto it = std::find_if(collection.begin(), collection.end(),
                             [&item, compare](const auto& i) {
@@ -205,9 +199,10 @@ namespace testing
             }
         };
 
+
         namespace vec {
             template<typename T>
-            using pred_t = collection_pred<std::vector<typename meta::select_unnamed_t<T>::type>, T>;
+            using pred_t = collection_pred<std::vector<T>, T>;
             template<typename T>
             pred_t<T> contains(T item) {
                 return pred_t<T>::contains(item);
@@ -215,7 +210,7 @@ namespace testing
 
             template<typename T>
             pred_t<T> not_contains(T item) {
-                return pred_t<T>::not_contains(item);
+                return !pred_t<T>::contains(item);
             }
 
             template<typename T>
@@ -229,7 +224,7 @@ namespace testing
             }
 
             template<typename T>
-            using pred_u_t = collection_pred<std::vector<typename meta::select_underlying_t<typename meta::select_unnamed_t<T>::type>::type>, T>;
+            using pred_u_t = collection_pred<std::vector<typename meta::select_underlying_t<T>::type>, T>;
 
             template<typename T>
             pred_u_t<T> contains_u(T item) {
