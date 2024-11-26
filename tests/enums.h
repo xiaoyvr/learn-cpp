@@ -17,10 +17,8 @@ struct ColorN : public testing::naming::named<Color> {
             return "Unknown";
         }
     }
-    operator Color () const override{
-        return e;
-    }
 };
+
 ColorN _n(typename ColorN::unnamed_t e){
     return ColorN(e);
 }

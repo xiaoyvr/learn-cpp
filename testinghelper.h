@@ -84,7 +84,7 @@ namespace testing
 			using unnamed_t = T;
 			named(T e) : e(e) {}
 			virtual operator std::string() const = 0;
-			virtual operator T () const = 0;
+			operator T () const {return e;}
 		protected:
 			T e;
 		};
@@ -250,6 +250,10 @@ namespace testing
             pred_u_t<T> excludes_all_u(std::vector<T> items) {
                 return pred_u_t<T>::excludes_all(items);
             }
+        }
+        template<typename TC, typename TV>
+        void PrintTo(const pred::collection_pred<TC, TV>& p, std::ostream* os) {
+            *os << static_cast<std::string>(p);
         }
     }
     
