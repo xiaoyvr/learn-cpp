@@ -49,7 +49,7 @@ namespace TestUnderlyingContains {
   using Val = WhenCheckUnderlyingContains::ParamType;
   INSTANTIATE_TEST_SUITE_P(Vec, WhenCheckUnderlyingContains, Values(
     Val{{0, 1}, pred::vec::contains_u(Color::Red), pred::vec::contains_u(Color::Yellow)},
-    Val{{0, 1}, pred::vec::not_contains_u(Color::Yellow), pred::vec::not_contains_u(Color::Red)}), 
+    Val{{0, 1}, !pred::vec::contains_u(Color::Yellow), !pred::vec::contains_u(Color::Red)}), 
     ([](const auto& info){ auto & [v, c, nc] = info.param;
       return c + "_and_not_" + nc + "_given_" + v;
   }));
