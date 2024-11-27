@@ -3,6 +3,7 @@
 #include "testinghelper.h"
 
 enum class Color {Blue, Red, Yellow};
+
 void PrintTo(const Color& p, std::ostream* os) {
     auto func = [](const auto& e){
         switch (e)
