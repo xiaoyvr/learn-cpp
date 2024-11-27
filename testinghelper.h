@@ -214,10 +214,21 @@ namespace testing
                 return pred_t<T>::includes_all(items);
             }
 
+            template <typename T, typename... Args>
+            pred_t<T> includes_all(T first, Args... rest) {
+                return pred_t<T>::includes_all(std::vector<T>{first, rest...});
+            }
+
             template<typename T>
             pred_t<T> excludes_all(std::vector<T> items) {
                 return pred_t<T>::excludes_all(items);
             }
+
+            template <typename T, typename... Args>
+            pred_t<T> excludes_all(T first, Args... rest) {
+                return pred_t<T>::excludes_all(std::vector<T>{first, rest...});
+            }
+
 
             template<typename T>
             using pred_u_t = collection_pred<std::vector<typename meta::select_underlying_t<T>::type>, T>;

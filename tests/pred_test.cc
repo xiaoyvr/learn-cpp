@@ -12,10 +12,10 @@ namespace TestVecBasic {
   INSTANTIATE_TEST_SUITE_P(Vec, WhenCheckVecOperations, Values(
     Val{{0, 1, 3}, contains(1), contains(2)},
     Val{{0, 1, 3}, !contains(2), !contains(1)},
-    Val{{0, 1, 3}, includes_all<int>({1, 3}), includes_all<int>({1, 4})},
-    Val{{0, 1, 3}, !includes_all<int>({1, 2}), !includes_all<int>({1, 3})},
-    Val{{0, 1, 3}, excludes_all<int>({2,4,6}), excludes_all<int>({1, 4, 6})},
-    Val{{0, 1, 3}, !excludes_all<int>({3,4}), !excludes_all<int>({2, 4, 6})}),
+    Val{{0, 1, 3}, includes_all(1, 3), includes_all<int>({1, 4})},
+    Val{{0, 1, 3}, !includes_all(1, 2), !includes_all<int>({1, 3})},
+    Val{{0, 1, 3}, excludes_all(2,4,6), excludes_all<int>({1, 4, 6})},
+    Val{{0, 1, 3}, !excludes_all(3,4), !excludes_all<int>({2, 4, 6})}),
     ([](const auto& info){ 
       auto & [v, pred, npred] = info.param;
       return pred + "_and_not_" + npred + "_given_" + v;
