@@ -7,15 +7,15 @@ using namespace testing::naming;
 using namespace pred::vec;
 
 namespace TestVecBasic {
-  class WhenCheckVecOperations : public TestWithParam<std::tuple<std::vector<int>, pred_t<int>, pred_t<int>>> {};
-  using Val = WhenCheckVecOperations::ParamType;
+  using param_t = std::tuple<std::vector<int>, pred_t<int>, pred_t<int>>;
+  class WhenCheckVecOperations : public TestWithParam<param_t> {};
   INSTANTIATE_TEST_SUITE_P(Vec, WhenCheckVecOperations, Values(
-    Val{{0, 1, 3}, contains(1), contains(2)},
-    Val{{0, 1, 3}, !contains(2), !contains(1)},
-    Val{{0, 1, 3}, includes_all(1, 3), includes_all<int>({1, 4})},
-    Val{{0, 1, 3}, !includes_all(1, 2), !includes_all<int>({1, 3})},
-    Val{{0, 1, 3}, excludes_all(2,4,6), excludes_all<int>({1, 4, 6})},
-    Val{{0, 1, 3}, !excludes_all(3,4), !excludes_all<int>({2, 4, 6})}),
+    param_t{{0, 1, 3}, contains(1), contains(2)},
+    param_t{{0, 1, 3}, !contains(2), !contains(1)},
+    param_t{{0, 1, 3}, includes_all(1, 3), includes_all<int>({1, 4})},
+    param_t{{0, 1, 3}, !includes_all(1, 2), !includes_all<int>({1, 3})},
+    param_t{{0, 1, 3}, excludes_all(2,4,6), excludes_all<int>({1, 4, 6})},
+    param_t{{0, 1, 3}, !excludes_all(3,4), !excludes_all<int>({2, 4, 6})}),
     ([](const auto& info){ 
       auto & [v, pred, npred] = info.param;
       return pred + "_and_not_" + npred + "_given_" + v;
@@ -29,11 +29,11 @@ namespace TestVecBasic {
 }
 
 namespace TestEnum {
-  class WhenCheckEnumContains : public TestWithParam<std::tuple<std::vector<Color>, pred_t<Color>, pred_t<Color>>> {};
-  using Val = WhenCheckEnumContains::ParamType;
+  using param_t = std::tuple<std::vector<Color>, pred_t<Color>, pred_t<Color>>;
+  class WhenCheckEnumContains : public TestWithParam<param_t> {};
   INSTANTIATE_TEST_SUITE_P(Vec, WhenCheckEnumContains, Values(
-    Val{{Color::Blue,Color::Red}, contains(Color::Red), contains(Color::Yellow)},
-    Val{{Color::Blue,Color::Red}, !contains(Color::Yellow), !contains(Color::Red)}), 
+    param_t{{Color::Blue,Color::Red}, contains(Color::Red), contains(Color::Yellow)},
+    param_t{{Color::Blue,Color::Red}, !contains(Color::Yellow), !contains(Color::Red)}), 
     ([](const auto& info){ auto & [v, c, nc] = info.param;
       return c + "_and_not_" + nc + "_given_" + v;
   }));
@@ -45,11 +45,11 @@ namespace TestEnum {
 }
 
 namespace TestUnderlyingContains {
-  class WhenCheckUnderlyingContains : public TestWithParam<std::tuple<std::vector<int>, pred_u_t<Color>, pred_u_t<Color>>> {};
-  using Val = WhenCheckUnderlyingContains::ParamType;
+  using param_t = std::tuple<std::vector<int>, pred_u_t<Color>, pred_u_t<Color>>;
+  class WhenCheckUnderlyingContains : public TestWithParam<param_t> {};
   INSTANTIATE_TEST_SUITE_P(Vec, WhenCheckUnderlyingContains, Values(
-    Val{{0, 1}, contains_u(Color::Red), contains_u(Color::Yellow)},
-    Val{{0, 1}, !contains_u(Color::Yellow), !contains_u(Color::Red)}), 
+    param_t{{0, 1}, contains_u(Color::Red), contains_u(Color::Yellow)},
+    param_t{{0, 1}, !contains_u(Color::Yellow), !contains_u(Color::Red)}), 
     ([](const auto& info){ auto & [v, c, nc] = info.param;
       return c + "_and_not_" + nc + "_given_" + v;
   }));
@@ -61,11 +61,11 @@ namespace TestUnderlyingContains {
 }
 
 namespace TestUnnamedEnum {
+  using param_t = std::tuple<std::vector<Direction>, pred_t<Direction>>;
   class WhenCheckUnnamed : public TestWithParam<std::tuple<std::vector<Direction>, pred_t<Direction>>> {};
-  using Val = WhenCheckUnnamed::ParamType;
   INSTANTIATE_TEST_SUITE_P(Vec, WhenCheckUnnamed, Values(
-    Val{{Direction::Up, Direction::Bottom, Direction::Left}, contains(Direction::Up)},
-    Val{{Direction::Up, Direction::Bottom, Direction::Left}, !contains(Direction::Right)}), 
+    param_t{{Direction::Up, Direction::Bottom, Direction::Left}, contains(Direction::Up)},
+    param_t{{Direction::Up, Direction::Bottom, Direction::Left}, !contains(Direction::Right)}), 
     ([](const auto& info){ auto & [v, c] = info.param;
       return c + "_given_" + v;
   }));
@@ -74,11 +74,11 @@ namespace TestUnnamedEnum {
     ASSERT_TRUE(pred(v)) << std::string(pred) << " failed";
   }
 
-  class WhenCheckUnnamedUnderlying : public TestWithParam<std::tuple<std::vector<int>, pred_u_t<Direction>>> {};
-  using ValU = WhenCheckUnnamedUnderlying::ParamType;
+  using paramu_t = std::tuple<std::vector<int>, pred_u_t<Direction>>;
+  class WhenCheckUnnamedUnderlying : public TestWithParam<paramu_t> {};
   INSTANTIATE_TEST_SUITE_P(Vec, WhenCheckUnnamedUnderlying, Values(
-    ValU{{0, 2, 3}, contains_u(Direction::Up)},
-    ValU{{0, 2, 3}, !contains_u(Direction::Right)}), 
+    paramu_t{{0, 2, 3}, contains_u(Direction::Up)},
+    paramu_t{{0, 2, 3}, !contains_u(Direction::Right)}), 
     ([](const auto& info){ auto & [v, c] = info.param;
       return c + "_given_" + v;
   }));
